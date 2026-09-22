@@ -1180,3 +1180,13 @@ public class FloatingModMenuService extends Service {
         return null;
     }
 }
+private void Thread() {
+    if (rootFrame == null) {
+        return;
+    }
+
+    // Standalone sandbox:
+    // keep the floating UI available independently
+    // of an external game process.
+    rootFrame.setVisibility(View.VISIBLE);
+}
