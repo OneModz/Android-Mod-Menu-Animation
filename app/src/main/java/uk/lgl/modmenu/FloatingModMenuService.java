@@ -120,6 +120,9 @@ public class FloatingModMenuService extends Service {
 
     boolean stopChecking;
 
+    float currentOverlayOpacity = 0.90f;
+    float currentOverlayScale = 1.0f;
+
     //initialize methods from the native library
     native void setTitleText(TextView textView);
 
@@ -417,7 +420,7 @@ public class FloatingModMenuService extends Service {
                     case MotionEvent.ACTION_UP:
                         int rawX = (int) (motionEvent.getRawX() - initialTouchX);
                         int rawY = (int) (motionEvent.getRawY() - initialTouchY);
-                        mExpanded.setAlpha(1f);
+                        mExpanded.setAlpha(currentOverlayOpacity);
                         mCollapsed.setAlpha(1f);
                         //The check for Xdiff <10 && YDiff< 10 because sometime elements moves a little while clicking.
                         //So that is click event.
@@ -434,7 +437,7 @@ public class FloatingModMenuService extends Service {
                         }
                         return true;
                     case MotionEvent.ACTION_MOVE:
-                        mExpanded.setAlpha(0.5f);
+                        mExpanded.setAlpha(currentOverlayOpacity * 0.60f);
                         mCollapsed.setAlpha(0.5f);
                         //Calculate the X and Y coordinates of the view.
                         params.x = initialX + ((int) (motionEvent.getRawX() - initialTouchX));
@@ -583,8 +586,124 @@ public class FloatingModMenuService extends Service {
         return switchR;
     }
 
+    private void applyAppearanceFeature(
+            int featNum,
+            int value
+    ) {
+        if (mExpanded == null) {
+            return;
+        }
+
+        switch (featNum) {
+
+            case 24: {
+                MENU_WIDTH = Math.max(
+                        200,
+                        Math.min(600, value)
+                );
+
+                ViewGroup.LayoutParams lp =
+                        mExpanded.getLayoutParams();
+
+                if (lp != null) {
+                    lp.width = dp(MENU_WIDTH);
+                    mExpanded.setLayoutParams(lp);
+                }
+
+                mExpanded.requestLayout();
+                break;
+            }
+
+            case 25: {
+                MENU_HEIGHT = Math.max(
+                        150,
+                        Math.min(700, value)
+                );
+
+                scrlLL = new LinearLayout.LayoutParams(
+                        MATCH_PARENT,
+                        dp(MENU_HEIGHT)
+                );
+
+                if (
+                        scrollView != null &&
+                        !Preferences.isExpanded
+                ) {
+                    scrollView.setLayoutParams(
+                            scrlLL
+                    );
+                }
+
+                mExpanded.requestLayout();
+                break;
+            }
+
+            case 26: {
+                currentOverlayOpacity =
+                        Math.max(
+                                0.20f,
+                                Math.min(
+                                        1.0f,
+                                        value / 100.0f
+                                )
+                        );
+
+                mExpanded.setAlpha(
+                        currentOverlayOpacity
+                );
+
+                break;
+            }
+
+            case 27: {
+                currentOverlayScale =
+                        Math.max(
+                                0.50f,
+                                Math.min(
+                                        2.0f,
+                                        value / 100.0f
+                                )
+                        );
+
+                mExpanded.setPivotX(0.0f);
+                mExpanded.setPivotY(0.0f);
+
+                mExpanded.setScaleX(
+                        currentOverlayScale
+                );
+
+                mExpanded.setScaleY(
+                        currentOverlayScale
+                );
+
+                break;
+            }
+        }
+    }
+
     private View SeekBar(final int featNum, final String featName, final int min, int max) {
         int loadedProg = Preferences.loadPrefInt(featName, featNum);
+
+        if (loadedProg == 0) {
+            switch (featNum) {
+                case 24:
+                    loadedProg = 290;
+                    break;
+
+                case 25:
+                    loadedProg = 210;
+                    break;
+
+                case 26:
+                    loadedProg = 90;
+                    break;
+
+                case 27:
+                    loadedProg = 100;
+                    break;
+            }
+        }
+
         LinearLayout linearLayout = new LinearLayout(this);
         linearLayout.setPadding(10, 5, 0, 5);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
@@ -600,6 +719,16 @@ public class FloatingModMenuService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             seekBar.setMin(min); //setMin for Oreo and above
         seekBar.setProgress((loadedProg == 0) ? min : loadedProg);
+
+        if (featNum >= 24 && featNum <= 27) {
+            applyAppearanceFeature(
+                    featNum,
+                    (loadedProg == 0)
+                            ? min
+                            : loadedProg
+            );
+        }
+
         seekBar.getThumb().setColorFilter(SeekBarColor, PorterDuff.Mode.SRC_ATOP);
         seekBar.getProgressDrawable().setColorFilter(SeekBarProgressColor, PorterDuff.Mode.SRC_ATOP);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -612,8 +741,34 @@ public class FloatingModMenuService extends Service {
             public void onProgressChanged(SeekBar seekBar, int i, boolean z) {
                 //if progress is greater than minimum, don't go below. Else, set progress
                 seekBar.setProgress(i < min ? min : i);
-                Preferences.changeFeatureInt(featName, featNum, i < min ? min : i);
-                textView.setText(Html.fromHtml(featName + ": <font color='" + NumberTxtColor + "'>" + (i < min ? min : i)));
+                int finalValue =
+                        i < min ? min : i;
+
+                Preferences.changeFeatureInt(
+                        featName,
+                        featNum,
+                        finalValue
+                );
+
+                if (
+                        featNum >= 24 &&
+                        featNum <= 27
+                ) {
+                    applyAppearanceFeature(
+                            featNum,
+                            finalValue
+                    );
+                }
+
+                textView.setText(
+                        Html.fromHtml(
+                                featName
+                                        + ": <font color='"
+                                        + NumberTxtColor
+                                        + "'>"
+                                        + finalValue
+                        )
+                );
             }
         });
         linearLayout.addView(textView);
@@ -633,22 +788,62 @@ public class FloatingModMenuService extends Service {
         button.setBackgroundColor(BTN_COLOR);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+
+                // Feedback visual de clique
+                v.animate()
+                        .alpha(0.45f)
+                        .setDuration(70)
+                        .withEndAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                v.animate()
+                                        .alpha(1.0f)
+                                        .setDuration(110)
+                                        .start();
+                            }
+                        })
+                        .start();
+
                 switch (featNum) {
                     case -4:
                         Logcat.Save(getApplicationContext());
                         break;
+
                     case -5:
                         Logcat.Clear(getApplicationContext());
                         break;
+
                     case -6:
                         scrollView.removeView(mSettings);
                         scrollView.addView(patches);
                         break;
+
                     case -100:
                         stopChecking = true;
                         break;
+
+                    case 12:
+                        android.widget.Toast.makeText(
+                                getApplicationContext(),
+                                "Save Profile acionado",
+                                android.widget.Toast.LENGTH_SHORT
+                        ).show();
+                        break;
+
+                    case 13:
+                        android.widget.Toast.makeText(
+                                getApplicationContext(),
+                                "Load Profile acionado",
+                                android.widget.Toast.LENGTH_SHORT
+                        ).show();
+                        break;
                 }
-                Preferences.changeFeatureInt(featName, featNum, 0);
+
+                Preferences.changeFeatureInt(
+                        featName,
+                        featNum,
+                        0
+                );
             }
         });
 
@@ -1144,11 +1339,10 @@ public class FloatingModMenuService extends Service {
         if (rootFrame == null) {
             return;
         }
-        if (isNotInGame()) {
-            rootFrame.setVisibility(View.INVISIBLE);
-        } else {
-            rootFrame.setVisibility(View.VISIBLE);
-        }
+
+        // Standalone sandbox:
+        // keep floating UI visible.
+        rootFrame.setVisibility(View.VISIBLE);
     }
 
     private class EditTextString {
@@ -1179,14 +1373,4 @@ public class FloatingModMenuService extends Service {
     public IBinder onBind(Intent intent) {
         return null;
     }
-}
-private void Thread() {
-    if (rootFrame == null) {
-        return;
-    }
-
-    // Standalone sandbox:
-    // keep the floating UI available independently
-    // of an external game process.
-    rootFrame.setVisibility(View.VISIBLE);
 }

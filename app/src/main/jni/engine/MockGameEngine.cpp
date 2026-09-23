@@ -1,5 +1,7 @@
 #include "MockGameEngine.h"
 
+#include "../config/ConfigManager.h"
+
 #include <algorithm>
 #include <android/log.h>
 
@@ -14,6 +16,9 @@
 
 MockGameEngine::MockGameEngine()
 {
+    ConfigManager::getInstance()
+        .applyToGameState(state_);
+
     lastAction_ =
         std::chrono::steady_clock::now();
 
@@ -62,6 +67,9 @@ void MockGameEngine::toggleAutoPlay(
 {
     state_.autoPlayEnabled = enabled;
 
+    ConfigManager::getInstance()
+        .captureGameState(state_);
+
     MOCK_LOG(
         "AutoPlay: %s",
         enabled ? "ON" : "OFF"
@@ -73,6 +81,9 @@ void MockGameEngine::setAutoPlayMode(
 )
 {
     state_.autoPlayMode = mode;
+
+    ConfigManager::getInstance()
+        .captureGameState(state_);
 
     MOCK_LOG(
         "AutoPlay mode: %d",
@@ -90,6 +101,9 @@ void MockGameEngine::setForce(
             0.0f,
             100.0f
         );
+
+    ConfigManager::getInstance()
+        .captureGameState(state_);
 
     MOCK_LOG(
         "Force: %.1f",
@@ -113,6 +127,9 @@ void MockGameEngine::setActionInterval(
             5000
         );
 
+    ConfigManager::getInstance()
+        .captureGameState(state_);
+
     MOCK_LOG(
         "Action interval: %d ms",
         state_.actionIntervalMs
@@ -131,10 +148,350 @@ void MockGameEngine::toggleAutoQueue(
 {
     state_.autoQueueEnabled = enabled;
 
+    ConfigManager::getInstance()
+        .captureGameState(state_);
+
     MOCK_LOG(
         "AutoQueue: %s",
         enabled ? "ON" : "OFF"
     );
+}
+
+
+void MockGameEngine::setQueueSpeedMode(
+    QueueSpeedMode mode
+)
+{
+    state_.queueSpeedMode = mode;
+
+    ConfigManager::getInstance()
+        .captureGameState(state_);
+
+    MOCK_LOG(
+        "Queue speed mode: %d",
+        static_cast<int>(mode)
+    );
+}
+
+QueueSpeedMode MockGameEngine::getQueueSpeedMode()
+    const
+{
+    return state_.queueSpeedMode;
+}
+
+void MockGameEngine::setCoinsToUse(
+    int coins
+)
+{
+    state_.coinsToUse =
+        std::clamp(
+            coins,
+            0,
+            1000000
+        );
+
+    ConfigManager::getInstance()
+        .captureGameState(state_);
+
+    MOCK_LOG(
+        "Coins to use: %d",
+        state_.coinsToUse
+    );
+}
+
+int MockGameEngine::getCoinsToUse() const
+{
+    return state_.coinsToUse;
+}
+
+
+void MockGameEngine::setMixedJoin(
+    bool enabled
+)
+{
+    state_.mixedJoin = enabled;
+
+    ConfigManager::getInstance()
+        .captureGameState(state_);
+
+    MOCK_LOG(
+        "Mixed Join: %s",
+        enabled ? "ON" : "OFF"
+    );
+}
+
+bool MockGameEngine::isMixedJoinEnabled()
+    const
+{
+    return state_.mixedJoin;
+}
+
+void MockGameEngine::setFixOnSingleTable(
+    bool enabled
+)
+{
+    state_.fixOnSingleTable = enabled;
+
+    ConfigManager::getInstance()
+        .captureGameState(state_);
+
+    MOCK_LOG(
+        "Fix on single table: %s",
+        enabled ? "ON" : "OFF"
+    );
+}
+
+bool MockGameEngine::isFixOnSingleTableEnabled()
+    const
+{
+    return state_.fixOnSingleTable;
+}
+
+void MockGameEngine::setSelectedTableCoins(
+    int coins
+)
+{
+    state_.selectedTableCoins =
+        std::clamp(
+            coins,
+            0,
+            10000000
+        );
+
+    ConfigManager::getInstance()
+        .captureGameState(state_);
+
+    MOCK_LOG(
+        "Selected table coins: %d",
+        state_.selectedTableCoins
+    );
+}
+
+int MockGameEngine::getSelectedTableCoins()
+    const
+{
+    return state_.selectedTableCoins;
+}
+
+
+void MockGameEngine::setShowLines(
+    bool enabled
+)
+{
+    state_.showLines = enabled;
+
+    ConfigManager::getInstance()
+        .captureGameState(state_);
+
+    MOCK_LOG(
+        "Show Lines: %s",
+        enabled ? "ON" : "OFF"
+    );
+}
+
+bool MockGameEngine::getShowLines()
+    const
+{
+    return state_.showLines;
+}
+
+void MockGameEngine::setKeepLinesAfterShot(
+    bool enabled
+)
+{
+    state_.keepLinesAfterShot = enabled;
+
+    ConfigManager::getInstance()
+        .captureGameState(state_);
+
+    MOCK_LOG(
+        "Keep Lines After Shot: %s",
+        enabled ? "ON" : "OFF"
+    );
+}
+
+bool MockGameEngine::getKeepLinesAfterShot()
+    const
+{
+    return state_.keepLinesAfterShot;
+}
+
+void MockGameEngine::setLineStyle(
+    LineStyle style
+)
+{
+    state_.lineStyle = style;
+
+    ConfigManager::getInstance()
+        .captureGameState(state_);
+
+    MOCK_LOG(
+        "Line Style: %d",
+        static_cast<int>(style)
+    );
+}
+
+LineStyle MockGameEngine::getLineStyle()
+    const
+{
+    return state_.lineStyle;
+}
+
+void MockGameEngine::setLineWidth(
+    float width
+)
+{
+    state_.lineWidth =
+        std::clamp(
+            width,
+            1.0f,
+            10.0f
+        );
+
+    ConfigManager::getInstance()
+        .captureGameState(state_);
+
+    MOCK_LOG(
+        "Line Width: %.1f",
+        state_.lineWidth
+    );
+}
+
+float MockGameEngine::getLineWidth()
+    const
+{
+    return state_.lineWidth;
+}
+
+void MockGameEngine::setLineOpacity(
+    float opacity
+)
+{
+    state_.lineOpacity =
+        std::clamp(
+            opacity,
+            0.0f,
+            1.0f
+        );
+
+    ConfigManager::getInstance()
+        .captureGameState(state_);
+
+    MOCK_LOG(
+        "Line Opacity: %.2f",
+        state_.lineOpacity
+    );
+}
+
+float MockGameEngine::getLineOpacity()
+    const
+{
+    return state_.lineOpacity;
+}
+
+
+void MockGameEngine::setMenuWidth(
+    int width
+)
+{
+    state_.menuWidth =
+        std::clamp(
+            width,
+            200,
+            600
+        );
+
+    ConfigManager::getInstance()
+        .captureGameState(state_);
+
+    MOCK_LOG(
+        "Menu Width: %d",
+        state_.menuWidth
+    );
+}
+
+int MockGameEngine::getMenuWidth()
+    const
+{
+    return state_.menuWidth;
+}
+
+void MockGameEngine::setMenuHeight(
+    int height
+)
+{
+    state_.menuHeight =
+        std::clamp(
+            height,
+            150,
+            700
+        );
+
+    ConfigManager::getInstance()
+        .captureGameState(state_);
+
+    MOCK_LOG(
+        "Menu Height: %d",
+        state_.menuHeight
+    );
+}
+
+int MockGameEngine::getMenuHeight()
+    const
+{
+    return state_.menuHeight;
+}
+
+void MockGameEngine::setOverlayOpacity(
+    float opacity
+)
+{
+    state_.overlayOpacity =
+        std::clamp(
+            opacity,
+            0.20f,
+            1.0f
+        );
+
+    ConfigManager::getInstance()
+        .captureGameState(state_);
+
+    MOCK_LOG(
+        "Overlay Opacity: %.2f",
+        state_.overlayOpacity
+    );
+}
+
+float MockGameEngine::getOverlayOpacity()
+    const
+{
+    return state_.overlayOpacity;
+}
+
+void MockGameEngine::setOverlayScale(
+    float scale
+)
+{
+    state_.overlayScale =
+        std::clamp(
+            scale,
+            0.50f,
+            2.0f
+        );
+
+    ConfigManager::getInstance()
+        .captureGameState(state_);
+
+    MOCK_LOG(
+        "Overlay Scale: %.2f",
+        state_.overlayScale
+    );
+}
+
+float MockGameEngine::getOverlayScale()
+    const
+{
+    return state_.overlayScale;
 }
 
 void MockGameEngine::start()
@@ -165,6 +522,9 @@ void MockGameEngine::pause(
 )
 {
     state_.paused = paused;
+
+    ConfigManager::getInstance()
+        .captureGameState(state_);
 
     MOCK_LOG(
         "Pause: %s",

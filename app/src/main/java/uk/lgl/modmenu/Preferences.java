@@ -44,31 +44,49 @@ public class Preferences {
     }
 
     public static int loadPrefInt(String featureName, int featureNum) {
-        if (loadPref) {
-            int i = Preferences.with(context).readInt(featureNum);
-            Changes(context, featureNum, featureName, i, false, null);
-            return i;
+        int value = Preferences.with(context).readInt(featureNum);
+
+        if (featureNum >= 0) {
+            Changes(
+                    context,
+                    featureNum,
+                    featureName,
+                    value,
+                    false,
+                    null
+            );
         }
-        return 0;
+
+        return value;
     }
 
     public static boolean loadPrefBool(String featureName, int featureNum, boolean bDef) {
-        boolean bool = Preferences.with(context).readBoolean(featureNum, bDef);
+        boolean value =
+                Preferences.with(context)
+                        .readBoolean(featureNum, bDef);
+
         if (featureNum == -1) {
-            loadPref = bool;
-        }
-        if (featureNum == -2) {
-            isAnimating = bool;
-        }
-        if (featureNum == -3) {
-            isExpanded = bool;
-        }
-        if (loadPref || featureNum < 0) {
-            bDef = bool;
+            loadPref = value;
         }
 
-        Changes(context, featureNum, featureName, 0, bDef, null);
-        return bDef;
+        if (featureNum == -2) {
+            isAnimating = value;
+        }
+
+        if (featureNum == -3) {
+            isExpanded = value;
+        }
+
+        Changes(
+                context,
+                featureNum,
+                featureName,
+                0,
+                value,
+                null
+        );
+
+        return value;
     }
 
     public static String loadPrefString(String featureName, int featureNum) {

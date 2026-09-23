@@ -9,7 +9,7 @@ android {
         versionCode 1
         versionName "2.8"
         ndk {
-            abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86'
+            abiFilters 'arm64-v8a'
         }
         signingConfig signingConfigs.debug
     }
@@ -25,12 +25,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    externalNativeBuild {
-        ndkBuild {
-            path file('src/main/jni/Android.mk')
-        }
-    }
-    ndkVersion = '22.0.7026061'
+
 }
 
 //dependencies must be placed below 'android' brackets to get it work on AIDE

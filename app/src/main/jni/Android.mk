@@ -16,11 +16,15 @@ LOCAL_CFLAGS := \
 
 LOCAL_C_INCLUDES += \
     $(LOCAL_PATH) \
-    $(LOCAL_PATH)/engine
+    $(LOCAL_PATH)/engine \
+    $(LOCAL_PATH)/config \
+    $(LOCAL_PATH)/third_party
 
 LOCAL_SRC_FILES := \
     Main.cpp \
-    engine/MockGameEngine.cpp
+    engine/MockGameEngine.cpp \
+    config/ConfigManager.cpp \
+    config/JsonConfigProvider.cpp
 
 LOCAL_LDLIBS := \
     -llog \
