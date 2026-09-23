@@ -3,6 +3,8 @@
 #include "IGameEngine.h"
 
 #include <chrono>
+#include <cstdint>
+#include <mutex>
 
 class MockGameEngine final : public IGameEngine
 {
@@ -11,7 +13,10 @@ public:
 
     void update() override;
 
-    // Auto Play
+    // =====================================================
+    // AUTO PLAY
+    // =====================================================
+
     void toggleAutoPlay(
         bool enabled
     ) override;
@@ -30,9 +35,13 @@ public:
         int milliseconds
     ) override;
 
-    int getActionInterval() const override;
+    int getActionInterval()
+        const override;
 
-    // Auto Queue
+    // =====================================================
+    // AUTO QUEUE
+    // =====================================================
+
     void toggleAutoQueue(
         bool enabled
     ) override;
@@ -48,7 +57,8 @@ public:
         int coins
     ) override;
 
-    int getCoinsToUse() const override;
+    int getCoinsToUse()
+        const override;
 
     void setMixedJoin(
         bool enabled
@@ -71,7 +81,10 @@ public:
     int getSelectedTableCoins()
         const override;
 
-    // Lines / Mira
+    // =====================================================
+    // LINES / MIRA
+    // =====================================================
+
     void setShowLines(
         bool enabled
     ) override;
@@ -107,7 +120,10 @@ public:
     float getLineOpacity()
         const override;
 
-    // Appearance / Overlay
+    // =====================================================
+    // APPEARANCE
+    // =====================================================
+
     void setMenuWidth(
         int width
     ) override;
@@ -136,7 +152,10 @@ public:
     float getOverlayScale()
         const override;
 
-    // Engine
+    // =====================================================
+    // ENGINE
+    // =====================================================
+
     void start() override;
     void stop() override;
 
@@ -144,26 +163,144 @@ public:
         bool paused
     ) override;
 
-    bool isRunning() const override;
+    bool isRunning()
+        const override;
 
-    GameState getGameState() const override;
+    GameState getGameState()
+        const override;
 
-    // Sandbox
+    // =====================================================
+    // FSM OBSERVABILITY
+    // =====================================================
+
+    const char* getAutomationStateText()
+        const;
+
+    std::uint64_t getAutomationCycle()
+        const;
+
+    // =====================================================
+    // SANDBOX
+    // =====================================================
+
     void simulateMatchStart() override;
     void simulateShot() override;
     void simulateMatchEnd() override;
 
 private:
+
+    // =====================================================
+    // AUTO PLAY FSM
+    // =====================================================
+
+    enum class AutomationState
+    {
+        STATE_IDLE = 0,
+        STATE_DECIDING,
+        STATE_EXECUTING,
+        STATE_COOLDOWN
+    };
+
+    enum class SimulatedActionType
+    {
+        None = 0,
+        Shot
+    };
+
+    struct PendingAction
+    {
+        SimulatedActionType type =
+            SimulatedActionType::None;
+
+        AutoPlayMode mode =
+            AutoPlayMode::Disabled;
+
+        float selectedForce =
+            0.0f;
+
+        bool expectedScore =
+            false;
+
+        bool valid =
+            false;
+    };
+
+    using Clock =
+        std::chrono::steady_clock;
+
+    using TimePoint =
+        Clock::time_point;
+
+    // =====================================================
+    // FSM
+    // =====================================================
+
+    void processAutoPlayLocked(
+        TimePoint now
+    );
+
+    void decideAutoPlayActionLocked();
+
+    void executePendingActionLocked();
+
+    void transitionToLocked(
+        AutomationState next,
+        TimePoint now
+    );
+
+    void resetAutomationLocked(
+        TimePoint now,
+        const char* reason
+    );
+
+    // =====================================================
+    // CONFIG
+    // =====================================================
+
+    void persistStateSnapshot()
+        const;
+
+    // =====================================================
+    // LOGGING
+    // =====================================================
+
     void log(
         const char* message
     ) const;
 
-    void processAutoPlay();
+    void logTransition(
+        AutomationState from,
+        AutomationState to
+    ) const;
+
+    static const char*
+    automationStateName(
+        AutomationState state
+    );
+
+    static const char*
+    autoPlayModeName(
+        AutoPlayMode mode
+    );
+
+    // =====================================================
+    // STATE
+    // =====================================================
+
+    mutable std::mutex stateMutex_;
 
     GameState state_;
 
-    bool running_ = false;
+    bool running_ =
+        false;
 
-    std::chrono::steady_clock::time_point
-        lastAction_;
+    AutomationState automationState_ =
+        AutomationState::STATE_IDLE;
+
+    PendingAction pendingAction_;
+
+    TimePoint stateEnteredAt_;
+
+    std::uint64_t automationCycle_ =
+        0;
 };

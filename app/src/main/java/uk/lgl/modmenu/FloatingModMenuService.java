@@ -138,6 +138,20 @@ public class FloatingModMenuService extends Service {
 
     native boolean isGameLibLoaded();
 
+    /*
+     * Estado atual do motor sandbox.
+     *
+     * Exemplo:
+     * {
+     *   "match":"PLAYING",
+     *   "fsm":"COOLDOWN",
+     *   "cycle":4,
+     *   "scorePlayer":4,
+     *   "scoreOpponent":0
+     * }
+     */
+    native String getEngineStateJson();
+
     //When this Class is called the code in this function will be executed
     @Override
     public void onCreate() {

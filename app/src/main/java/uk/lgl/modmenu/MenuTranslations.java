@@ -155,6 +155,18 @@ public final class MenuTranslations {
             case "table_selection":
                 return "Table selection";
 
+            case "simulation_test":
+                return "Simulation test";
+
+            case "simulation_test_desc":
+                return "Controls the standalone sandbox match";
+
+            case "start_simulation":
+                return "Start simulation";
+
+            case "end_simulation":
+                return "End simulation";
+
             default:
                 return key;
         }
@@ -290,6 +302,18 @@ public final class MenuTranslations {
             case "table_selection":
                 return "Seleção de mesa";
 
+            case "simulation_test":
+                return "Teste de simulação";
+
+            case "simulation_test_desc":
+                return "Controla a partida do sandbox independente";
+
+            case "start_simulation":
+                return "Iniciar simulação";
+
+            case "end_simulation":
+                return "Encerrar simulação";
+
             default:
                 return key;
         }
@@ -424,6 +448,18 @@ public final class MenuTranslations {
 
             case "table_selection":
                 return "Selección de mesa";
+
+            case "simulation_test":
+                return "Prueba de simulación";
+
+            case "simulation_test_desc":
+                return "Controla la partida del sandbox independiente";
+
+            case "start_simulation":
+                return "Iniciar simulación";
+
+            case "end_simulation":
+                return "Finalizar simulación";
 
             default:
                 return key;

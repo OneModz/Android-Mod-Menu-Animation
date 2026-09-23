@@ -351,35 +351,90 @@ Java_uk_lgl_modmenu_FloatingModMenuService_getEngineStateJson(
     const GameState state =
         gEngine.getGameState();
 
-    char buffer[512];
+    const char* matchStateText =
+        "IDLE";
+
+    switch (state.matchState)
+    {
+        case MatchState::Idle:
+            matchStateText = "IDLE";
+            break;
+
+        case MatchState::Searching:
+            matchStateText = "SEARCHING";
+            break;
+
+        case MatchState::Playing:
+            matchStateText = "PLAYING";
+            break;
+
+        case MatchState::Finished:
+            matchStateText = "FINISHED";
+            break;
+    }
+
+    const char* fsmStateText =
+        gEngine.getAutomationStateText();
+
+    const unsigned long long cycle =
+        static_cast<unsigned long long>(
+            gEngine.getAutomationCycle()
+        );
+
+    char buffer[768];
 
     snprintf(
         buffer,
         sizeof(buffer),
-        "{\"autoPlay\":%s,"
+
+        "{"
+        "\"autoPlay\":%s,"
         "\"mode\":%d,"
         "\"force\":%.1f,"
         "\"interval\":%d,"
         "\"autoQueue\":%s,"
-        "\"paused\":%s}",
+        "\"paused\":%s,"
+        "\"match\":\"%s\","
+        "\"fsm\":\"%s\","
+        "\"cycle\":%llu,"
+        "\"scorePlayer\":%d,"
+        "\"scoreOpponent\":%d"
+        "}",
+
         state.autoPlayEnabled
             ? "true"
             : "false",
+
         static_cast<int>(
             state.autoPlayMode
         ),
+
         state.force,
+
         state.actionIntervalMs,
+
         state.autoQueueEnabled
             ? "true"
             : "false",
+
         state.paused
             ? "true"
-            : "false"
+            : "false",
+
+        matchStateText,
+
+        fsmStateText,
+
+        cycle,
+
+        state.simulatedScorePlayer,
+
+        state.simulatedScoreOpponent
     );
 
     return env->NewStringUTF(buffer);
 }
+
 
 JNIEXPORT void JNICALL
 Java_uk_lgl_modmenu_Preferences_Changes(

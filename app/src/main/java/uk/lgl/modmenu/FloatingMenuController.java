@@ -701,6 +701,38 @@ public class FloatingMenuController {
                 view.findViewById(R.id.txtIntervalValue);
 
 
+        final Button btnStartSimulation =
+                view.findViewById(
+                        R.id.btnStartSimulation
+                );
+
+        final Button btnEndSimulation =
+                view.findViewById(
+                        R.id.btnEndSimulation
+                );
+
+
+        final TextView txtMatchState =
+                view.findViewById(
+                        R.id.txtMatchState
+                );
+
+        final TextView txtFsmState =
+                view.findViewById(
+                        R.id.txtFsmState
+                );
+
+        final TextView txtFsmCycle =
+                view.findViewById(
+                        R.id.txtFsmCycle
+                );
+
+        final TextView txtSimulatedScore =
+                view.findViewById(
+                        R.id.txtSimulatedScore
+                );
+
+
         /*
          * ENABLE
          */
@@ -919,7 +951,205 @@ public class FloatingMenuController {
                     }
                 }
         );
+
+        /*
+         * =====================================================
+         * FSM SANDBOX SIMULATION
+         * =====================================================
+         *
+         * Feature 7 = Simulate Match Start
+         * Feature 9 = Simulate Match End
+         */
+
+        btnStartSimulation.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        Preferences.changeFeatureInt(
+                                "Simulate Match Start",
+                                7,
+                                0
+                        );
+
+                        android.widget.Toast.makeText(
+                                context,
+                                "Simulation started",
+                                android.widget.Toast.LENGTH_SHORT
+                        ).show();
+
+                        btnStartSimulation.setText(
+                                "Simulation running"
+                        );
+                    }
+                }
+        );
+
+        btnEndSimulation.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        Preferences.changeFeatureInt(
+                                "Simulate Match End",
+                                9,
+                                0
+                        );
+
+                        android.widget.Toast.makeText(
+                                context,
+                                "Simulation ended",
+                                android.widget.Toast.LENGTH_SHORT
+                        ).show();
+
+                        btnStartSimulation.setText(
+                                MenuTranslations.get(
+                                        currentLanguage,
+                                        "start_simulation"
+                                )
+                        );
+                    }
+                }
+        );
+        startFsmStatusUpdates(
+                view,
+                txtMatchState,
+                txtFsmState,
+                txtFsmCycle,
+                txtSimulatedScore
+        );
+
     }
+
+    private void startFsmStatusUpdates(
+            final View tabView,
+            final TextView txtMatchState,
+            final TextView txtFsmState,
+            final TextView txtFsmCycle,
+            final TextView txtSimulatedScore
+    ) {
+
+        if (!(context instanceof FloatingModMenuService)) {
+            return;
+        }
+
+        final FloatingModMenuService service =
+                (FloatingModMenuService) context;
+
+        final Runnable updater =
+                new Runnable() {
+
+                    @Override
+                    public void run() {
+
+                        if (!tabView.isAttachedToWindow()) {
+                            return;
+                        }
+
+                        try {
+
+                            String rawJson =
+                                    service.getEngineStateJson();
+
+                            org.json.JSONObject state =
+                                    new org.json.JSONObject(
+                                            rawJson
+                                    );
+
+                            String match =
+                                    state.optString(
+                                            "match",
+                                            "IDLE"
+                                    );
+
+                            String fsm =
+                                    state.optString(
+                                            "fsm",
+                                            "IDLE"
+                                    );
+
+                            long cycle =
+                                    state.optLong(
+                                            "cycle",
+                                            0L
+                                    );
+
+                            int playerScore =
+                                    state.optInt(
+                                            "scorePlayer",
+                                            0
+                                    );
+
+                            int opponentScore =
+                                    state.optInt(
+                                            "scoreOpponent",
+                                            0
+                                    );
+
+                            txtMatchState.setText(
+                                    match
+                            );
+
+                            txtFsmState.setText(
+                                    fsm
+                            );
+
+                            txtFsmCycle.setText(
+                                    String.valueOf(
+                                            cycle
+                                    )
+                            );
+
+                            txtSimulatedScore.setText(
+                                    playerScore
+                                            + " - "
+                                            + opponentScore
+                            );
+
+                        } catch (Exception ignored) {
+
+                            txtMatchState.setText(
+                                    "ERROR"
+                            );
+
+                            txtFsmState.setText(
+                                    "UNKNOWN"
+                            );
+                        }
+
+                        tabView.postDelayed(
+                                this,
+                                150L
+                        );
+                    }
+                };
+
+        tabView.addOnAttachStateChangeListener(
+                new View.OnAttachStateChangeListener() {
+
+                    @Override
+                    public void onViewAttachedToWindow(
+                            View v
+                    ) {
+                    }
+
+                    @Override
+                    public void onViewDetachedFromWindow(
+                            View v
+                    ) {
+
+                        tabView.removeCallbacks(
+                                updater
+                        );
+                    }
+                }
+        );
+
+        tabView.post(
+                updater
+        );
+    }
+
 
     private void updateAutoPlayModeButtons(
             Button semi,
@@ -1431,6 +1661,11 @@ public class FloatingMenuController {
                 "full_auto",
                 "force",
                 "action_interval",
+
+                "simulation_test",
+                "simulation_test_desc",
+                "start_simulation",
+                "end_simulation",
 
                 "autoqueue_title",
                 "queue",
