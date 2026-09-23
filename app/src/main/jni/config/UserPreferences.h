@@ -11,6 +11,13 @@ enum class AppTheme
     Custom
 };
 
+enum class AppLanguage
+{
+    English = 0,
+    Portuguese,
+    Spanish
+};
+
 struct AutoPlayPreferences
 {
     bool enabled = false;
@@ -78,6 +85,9 @@ struct UserPreferences
     LinesPreferences lines;
 
     AppearancePreferences appearance;
+
+    AppLanguage language =
+        AppLanguage::Portuguese;
 
     bool paused = false;
 };

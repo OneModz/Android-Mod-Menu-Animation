@@ -147,8 +147,8 @@ public class FloatingModMenuService extends Service {
         //Create the menu
         initFloating();
 
-        //Start the Gradient Animation
-        startAnimation();
+        // RGB gradient background disabled for the new dark UI.
+        // startAnimation();
 
         //Create a handler for this Class
         final Handler handler = new Handler();
@@ -163,242 +163,543 @@ public class FloatingModMenuService extends Service {
     //Here we write the code for our Menu
     // Reference: https://www.androidhive.info/2016/11/android-floating-widget-like-facebook-chat-head/
     private void initFloating() {
-        rootFrame = new FrameLayout(this); // Global markup
-        rootFrame.setOnTouchListener(onTouchListener());
-        mRootContainer = new RelativeLayout(this); // Markup on which two markups of the icon and the menu itself will be placed
-        mCollapsed = new RelativeLayout(this); // Markup of the icon (when the menu is minimized)
+
+        /*
+         * =====================================================
+         * ROOT DO OVERLAY
+         * =====================================================
+         */
+
+        rootFrame = new FrameLayout(this);
+
+        mRootContainer = new RelativeLayout(this);
+
+        mCollapsed = new RelativeLayout(this);
         mCollapsed.setVisibility(View.VISIBLE);
         mCollapsed.setAlpha(ICON_ALPHA);
 
-        //********** The box of the mod menu **********
-        mExpanded = new LinearLayout(this); // Menu markup (when the menu is expanded)
+
+        /*
+         * =====================================================
+         * NOVO MENU XML
+         * =====================================================
+         *
+         * O root de floating_mod_menu.xml é um LinearLayout.
+         * Ele substitui toda a construção antiga feita em Java.
+         */
+
+        mExpanded = (LinearLayout)
+                android.view.LayoutInflater
+                        .from(this)
+                        .inflate(
+                                uk.lgl.R.layout.floating_mod_menu,
+                                null,
+                                false
+                        );
+
+        /*
+         * =====================================================
+         * TAMANHO RESPONSIVO
+         * =====================================================
+         *
+         * O XML possui apenas um tamanho inicial.
+         * Aqui calculamos o tamanho real de acordo com a tela.
+         */
+
+        android.util.DisplayMetrics metrics =
+                getResources().getDisplayMetrics();
+
+        int screenWidth =
+                metrics.widthPixels;
+
+        int screenHeight =
+                metrics.heightPixels;
+
+        /*
+         * Usa até 90% da largura disponível.
+         * Em telas grandes limita em aproximadamente 570dp.
+         */
+
+        int responsiveWidth =
+                Math.min(
+                        (int) (screenWidth * 0.90f),
+                        dp(570)
+                );
+
+        /*
+         * Mantém formato horizontal.
+         *
+         * Em landscape ficará mais largo.
+         * Em telas menores reduz automaticamente.
+         */
+
+        int responsiveHeight =
+                Math.min(
+                        dp(330),
+                        (int) (responsiveWidth * 0.72f)
+                );
+
+        /*
+         * Nunca ultrapassa aproximadamente 70%
+         * da altura real da tela.
+         */
+
+        responsiveHeight =
+                Math.min(
+                        responsiveHeight,
+                        (int) (screenHeight * 0.70f)
+                );
+
+        /*
+         * Garante espaço mínimo suficiente para
+         * header + conteúdo + footer.
+         */
+
+        responsiveHeight =
+                Math.max(
+                        responsiveHeight,
+                        Math.min(
+                                dp(220),
+                                (int) (screenHeight * 0.70f)
+                        )
+                );
+
+        android.view.ViewGroup.LayoutParams responsiveParams =
+                new android.view.ViewGroup.LayoutParams(
+                        responsiveWidth,
+                        responsiveHeight
+                );
+
+        mExpanded.setLayoutParams(
+                responsiveParams
+        );
+
         mExpanded.setVisibility(View.GONE);
-        mExpanded.setBackgroundColor(MENU_BG_COLOR);
-        mExpanded.setOrientation(LinearLayout.VERTICAL);
-        // mExpanded.setPadding(1, 1, 1, 1);
-        mExpanded.setLayoutParams(new LinearLayout.LayoutParams(dp(MENU_WIDTH), WRAP_CONTENT));
-        GradientDrawable gdMenuBody = new GradientDrawable();
-        gdMenuBody.setCornerRadius(MENU_CORNER); //Set corner
-        gdMenuBody.setColor(MENU_BG_COLOR); //Set background color
-        gdMenuBody.setStroke(1, Color.parseColor("#32cb00")); //Set border
-        //mExpanded.setBackground(gdMenuBody); //Apply GradientDrawable to it
+        mExpanded.setAlpha(currentOverlayOpacity);
 
-        //********** The icon to open mod menu **********
+
+        /*
+         * Controller:
+         *
+         * Basic
+         * Lines
+         * Auto Play
+         * Auto Queue
+         */
+
+        new FloatingMenuController(
+                this,
+                mExpanded
+        );
+
+
+        /*
+         * =====================================================
+         * ÍCONE FLUTUANTE
+         * =====================================================
+         */
+
         startimage = new ImageView(this);
-        startimage.setLayoutParams(new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
-        int applyDimension = (int) TypedValue.applyDimension(1, ICON_SIZE, getResources().getDisplayMetrics()); //Icon size
-        startimage.getLayoutParams().height = applyDimension;
-        startimage.getLayoutParams().width = applyDimension;
-        startimage.setScaleType(ImageView.ScaleType.FIT_XY);
-        byte[] decode = Base64.decode(Icon(), 0);
-        startimage.setImageBitmap(BitmapFactory.decodeByteArray(decode, 0, decode.length));
-        ((ViewGroup.MarginLayoutParams) startimage.getLayoutParams()).topMargin = convertDipToPixels(10);
-        //Initialize event handlers for buttons, etc.
-        startimage.setOnTouchListener(onTouchListener());
-        startimage.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                mCollapsed.setVisibility(View.GONE);
-                mExpanded.setVisibility(View.VISIBLE);
-            }
-        });
 
-        //********** The icon in Webview to open mod menu **********
-        WebView wView = new WebView(this); //Icon size width=\"50\" height=\"50\"
-        wView.setLayoutParams(new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
-        int applyDimension2 = (int) TypedValue.applyDimension(1, ICON_SIZE, getResources().getDisplayMetrics()); //Icon size
-        wView.getLayoutParams().height = applyDimension2;
-        wView.getLayoutParams().width = applyDimension2;
-        wView.loadData("<html>" +
-                "<head></head>" +
-                "<body style=\"margin: 0; padding: 0\">" +
-                "<img src=\"" + IconWebViewData() + "\" width=\"" + ICON_SIZE + "\" height=\"" + ICON_SIZE + "\" >" +
-                "</body>" +
-                "</html>", "text/html", "utf-8");
-        wView.setBackgroundColor(0x00000000); //Transparent
-        wView.setAlpha(ICON_ALPHA);
-        wView.getSettings().setAppCacheEnabled(true);
-        wView.setOnTouchListener(onTouchListener());
+        startimage.setLayoutParams(
+                new RelativeLayout.LayoutParams(
+                        WRAP_CONTENT,
+                        WRAP_CONTENT
+                )
+        );
 
-        //********** Settings icon **********
-        TextView settings = new TextView(this); //Android 5 can't show ⚙, instead show other icon instead
-        settings.setText(Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M ? "⚙" : "\uD83D\uDD27");
-        settings.setTextColor(TEXT_COLOR);
-        settings.setTypeface(Typeface.DEFAULT_BOLD);
-        settings.setTextSize(20.0f);
-        RelativeLayout.LayoutParams rlsettings = new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
-        rlsettings.addRule(ALIGN_PARENT_RIGHT);
-        settings.setLayoutParams(rlsettings);
-        settings.setOnClickListener(new View.OnClickListener() {
-            boolean settingsOpen;
+        int iconSizePx =
+                (int) TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_DIP,
+                        ICON_SIZE,
+                        getResources().getDisplayMetrics()
+                );
 
-            @Override
-            public void onClick(View v) {
-                try {
-                    settingsOpen = !settingsOpen;
-                    if (settingsOpen) {
-                        scrollView.removeView(patches);
-                        scrollView.addView(mSettings);
-                        scrollView.scrollTo(0, 0);
-                    } else {
-                        scrollView.removeView(mSettings);
-                        scrollView.addView(patches);
+        startimage.getLayoutParams().height =
+                iconSizePx;
+
+        startimage.getLayoutParams().width =
+                iconSizePx;
+
+        startimage.setScaleType(
+                ImageView.ScaleType.FIT_XY
+        );
+
+        byte[] decode =
+                Base64.decode(
+                        Icon(),
+                        0
+                );
+
+        startimage.setImageBitmap(
+                BitmapFactory.decodeByteArray(
+                        decode,
+                        0,
+                        decode.length
+                )
+        );
+
+        ((ViewGroup.MarginLayoutParams)
+                startimage.getLayoutParams())
+                .topMargin =
+                convertDipToPixels(10);
+
+
+        /*
+         * =====================================================
+         * WEBVIEW ICON
+         * =====================================================
+         */
+
+        WebView wView =
+                new WebView(this);
+
+        wView.setLayoutParams(
+                new RelativeLayout.LayoutParams(
+                        WRAP_CONTENT,
+                        WRAP_CONTENT
+                )
+        );
+
+        wView.getLayoutParams().height =
+                iconSizePx;
+
+        wView.getLayoutParams().width =
+                iconSizePx;
+
+        wView.loadData(
+                "<html>" +
+                        "<head></head>" +
+                        "<body style=\"margin:0;padding:0\">" +
+                        "<img src=\"" +
+                        IconWebViewData() +
+                        "\" width=\"" +
+                        ICON_SIZE +
+                        "\" height=\"" +
+                        ICON_SIZE +
+                        "\">" +
+                        "</body>" +
+                        "</html>",
+                "text/html",
+                "utf-8"
+        );
+
+        wView.setBackgroundColor(
+                0x00000000
+        );
+
+        wView.setAlpha(
+                ICON_ALPHA
+        );
+
+        wView.getSettings()
+                .setAppCacheEnabled(true);
+
+
+        /*
+         * =====================================================
+         * CONTROLES DA NOVA UI
+         * =====================================================
+         */
+
+        final View menuHeader =
+                mExpanded.findViewById(
+                        uk.lgl.R.id.menuHeader
+                );
+
+        final Button btnPin =
+                mExpanded.findViewById(
+                        uk.lgl.R.id.btnPin
+                );
+
+        final Button btnHeaderMinimize =
+                mExpanded.findViewById(
+                        uk.lgl.R.id.btnHeaderMinimize
+                );
+
+        final Button btnHide =
+                mExpanded.findViewById(
+                        uk.lgl.R.id.btnHide
+                );
+
+        final Button btnFooterMinimize =
+                mExpanded.findViewById(
+                        uk.lgl.R.id.btnFooterMinimize
+                );
+
+        final Button btnClose =
+                mExpanded.findViewById(
+                        uk.lgl.R.id.btnClose
+                );
+
+
+        /*
+         * =====================================================
+         * MINIMIZAR
+         * =====================================================
+         */
+
+        View.OnClickListener minimizeListener =
+                new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(
+                            View view
+                    ) {
+
+                        mExpanded.setVisibility(
+                                View.GONE
+                        );
+
+                        mCollapsed.setVisibility(
+                                View.VISIBLE
+                        );
+
+                        mCollapsed.setAlpha(
+                                ICON_ALPHA
+                        );
                     }
-                } catch (IllegalStateException e) {
+                };
+
+        btnHeaderMinimize.setOnClickListener(
+                minimizeListener
+        );
+
+        btnFooterMinimize.setOnClickListener(
+                minimizeListener
+        );
+
+
+        /*
+         * =====================================================
+         * HIDE / KILL
+         * =====================================================
+         */
+
+        btnHide.setOnClickListener(
+                new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(
+                            View view
+                    ) {
+
+                        /*
+                         * Igual ao comportamento antigo:
+                         * mantém o ponto do ícone, mas invisível.
+                         */
+
+                        mExpanded.setVisibility(
+                                View.GONE
+                        );
+
+                        mCollapsed.setVisibility(
+                                View.VISIBLE
+                        );
+
+                        mCollapsed.setAlpha(
+                                0.0f
+                        );
+
+                        Toast.makeText(
+                                FloatingModMenuService.this,
+                                "Menu hidden",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
                 }
-            }
-        });
+        );
 
-        //********** Settings **********
-        mSettings = new LinearLayout(this);
-        mSettings.setOrientation(LinearLayout.VERTICAL);
-        featureList(settingsList(), mSettings);
+        btnHide.setOnLongClickListener(
+                new View.OnLongClickListener() {
 
-        //********** Title text **********
-        RelativeLayout titleText = new RelativeLayout(this);
-        titleText.setPadding(10, 5, 10, 5);
-        titleText.setVerticalGravity(16);
+                    @Override
+                    public boolean onLongClick(
+                            View view
+                    ) {
 
-        // TextView title = new TextView(this);
-        TitanicTextView title = new TitanicTextView(this);
-        //title.setText(Html.fromHtml(Title()));
-        title.setTextColor(TEXT_COLOR);
-        title.setTextSize(18.0f);
-        title.setGravity(Gravity.CENTER);
-        RelativeLayout.LayoutParams rl = new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
-        rl.addRule(RelativeLayout.CENTER_HORIZONTAL);
-        title.setLayoutParams(rl);
-        setTitleText(title);
-        new Titanic().start(title);
+                        Toast.makeText(
+                                FloatingModMenuService.this,
+                                "Menu service stopped",
+                                Toast.LENGTH_SHORT
+                        ).show();
 
-        //********** Heading text **********
-        TitanicTextView heading = new TitanicTextView(this);
-        //heading.setText(Html.fromHtml(Heading()));
-        heading.setEllipsize(TextUtils.TruncateAt.MARQUEE);
-        heading.setMarqueeRepeatLimit(-1);
-        heading.setSingleLine(true);
-        heading.setSelected(true);
-        heading.setTextColor(TEXT_COLOR);
-        heading.setTextSize(10.0f);
-        heading.setGravity(Gravity.CENTER);
-        heading.setPadding(0, 0, 0, 5);
-        setHeadingText(heading);
-        new Titanic().start(heading);
+                        stopSelf();
 
-        //********** Mod menu feature list **********
-        scrollView = new ScrollView(this);
-        //Auto size. To set size manually, change the width and height example 500, 500
-        scrlLL = new LinearLayout.LayoutParams(MATCH_PARENT, dp(MENU_HEIGHT));
-        scrlLLExpanded = new LinearLayout.LayoutParams(mExpanded.getLayoutParams());
-        scrlLLExpanded.weight = 1.0f;
-        scrollView.setLayoutParams(Preferences.isExpanded ? scrlLLExpanded : scrlLL);
-        scrollView.setBackgroundColor(MENU_FEATURE_BG_COLOR);
-
-        patches = new LinearLayout(this);
-        patches.setOrientation(LinearLayout.VERTICAL);
-
-        //**********  Hide/Kill button **********
-        RelativeLayout relativeLayout = new RelativeLayout(this);
-        relativeLayout.setPadding(10, 3, 10, 3);
-        relativeLayout.setVerticalGravity(Gravity.CENTER);
-
-        //Button hideBtn = new Button(this);
-        RelativeLayout.LayoutParams lParamsHideBtn = new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
-        lParamsHideBtn.addRule(ALIGN_PARENT_LEFT);
-
-        TitanicButton hideBtn = new TitanicButton(this);
-        hideBtn.setLayoutParams(lParamsHideBtn);
-        hideBtn.setBackgroundColor(Color.TRANSPARENT);
-        hideBtn.setText("HIDE/KILL (Hold)");
-        hideBtn.setTextColor(TEXT_COLOR);
-        // hideBtn.setPadding(0, 17, 0, 17);
-        //hideBtn.setTypeface(Typeface.DEFAULT_BOLD);
-        hideBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                mCollapsed.setVisibility(View.VISIBLE);
-                mCollapsed.setAlpha(0);
-                mExpanded.setVisibility(View.GONE);
-                Toast.makeText(view.getContext(), "Icon hidden. Remember the hidden icon position", Toast.LENGTH_LONG).show();
-            }
-        });
-        hideBtn.setOnLongClickListener(new View.OnLongClickListener() {
-            public boolean onLongClick(View view) {
-                Toast.makeText(view.getContext(), "Menu service killed", Toast.LENGTH_LONG).show();
-                FloatingModMenuService.this.stopSelf();
-                return false;
-            }
-        });
-        new Titanic().start(hideBtn);
-
-        //********** Close button **********
-        RelativeLayout.LayoutParams lParamsCloseBtn = new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
-        lParamsCloseBtn.addRule(ALIGN_PARENT_RIGHT);
-
-        TitanicButton closeBtn = new TitanicButton(this);
-        closeBtn.setLayoutParams(lParamsCloseBtn);
-        closeBtn.setBackgroundColor(Color.TRANSPARENT);
-        closeBtn.setText("MINIMIZE");
-        closeBtn.setTextColor(TEXT_COLOR);
-        closeBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                mCollapsed.setVisibility(View.VISIBLE);
-                mCollapsed.setAlpha(ICON_ALPHA);
-                mExpanded.setVisibility(View.GONE);
-            }
-        });
-
-        new Titanic().start(closeBtn);
+                        return true;
+                    }
+                }
+        );
 
 
-        //********** Params **********
-        //Variable to check later if the phone supports Draw over other apps permission
-        int iparams = Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O ? 2038 : 2002;
-        params = new WindowManager.LayoutParams(WRAP_CONTENT, WRAP_CONTENT, iparams, 8, -3);
-        params.gravity = 51;
+        /*
+         * =====================================================
+         * X DA SIDEBAR
+         * =====================================================
+         */
+
+        btnClose.setOnClickListener(
+                new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(
+                            View view
+                    ) {
+
+                        stopSelf();
+                    }
+                }
+        );
+
+
+        /*
+         * =====================================================
+         * PIN / ARRASTAR
+         * =====================================================
+         */
+
+        final boolean[] pinned = {
+                false
+        };
+
+        btnPin.setOnClickListener(
+                new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(
+                            View view
+                    ) {
+
+                        pinned[0] =
+                                !pinned[0];
+
+                        if (pinned[0]) {
+
+                            menuHeader.setOnTouchListener(
+                                    null
+                            );
+
+                            btnPin.setTextColor(
+                                    android.graphics.Color
+                                            .parseColor(
+                                                    "#9CFF2E"
+                                            )
+                            );
+
+                        } else {
+
+                            menuHeader.setOnTouchListener(
+                                    onTouchListener()
+                            );
+
+                            btnPin.setTextColor(
+                                    android.graphics.Color.WHITE
+                            );
+                        }
+                    }
+                }
+        );
+
+
+        /*
+         * =====================================================
+         * WINDOW MANAGER
+         * =====================================================
+         */
+
+        int overlayType =
+                Build.VERSION.SDK_INT
+                        >= Build.VERSION_CODES.O
+                        ? 2038
+                        : 2002;
+
+        params =
+                new WindowManager.LayoutParams(
+                        WRAP_CONTENT,
+                        WRAP_CONTENT,
+                        overlayType,
+                        8,
+                        -3
+                );
+
+        params.gravity =
+                Gravity.TOP |
+                Gravity.LEFT;
+
         params.x = 0;
         params.y = 100;
 
-        //********** Adding view components **********
-        rootFrame.addView(mRootContainer);
-        mRootContainer.addView(mCollapsed);
-        mRootContainer.addView(mExpanded);
+
+        /*
+         * =====================================================
+         * MONTAGEM
+         * =====================================================
+         */
+
+        rootFrame.addView(
+                mRootContainer
+        );
+
+        mRootContainer.addView(
+                mCollapsed
+        );
+
+        mRootContainer.addView(
+                mExpanded
+        );
+
+
+        /*
+         * Mantém compatibilidade com o ícone original LGL.
+         */
+
         if (IconWebViewData() != null) {
-            mCollapsed.addView(wView);
+
+            mCollapsed.addView(
+                    wView
+            );
+
+            wView.setOnTouchListener(
+                    onTouchListener()
+            );
+
         } else {
-            mCollapsed.addView(startimage);
+
+            mCollapsed.addView(
+                    startimage
+            );
+
+            startimage.setOnTouchListener(
+                    onTouchListener()
+            );
         }
-        titleText.addView(title);
-        titleText.addView(settings);
-        mExpanded.addView(titleText);
-        mExpanded.addView(heading);
-        scrollView.addView(patches);
-        mExpanded.addView(scrollView);
-        relativeLayout.addView(hideBtn);
-        relativeLayout.addView(closeBtn);
-        mExpanded.addView(relativeLayout);
-        mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        mWindowManager.addView(rootFrame, params);
 
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            boolean viewLoaded = false;
 
-            @Override
-            public void run() {
-                //If the save preferences is enabled, it will check if game lib is loaded before starting menu
-                //Comment the if-else code out except startService if you want to run the app and test preferences
-                if (Preferences.loadPref && !isGameLibLoaded() && !stopChecking) {
-                    if (!viewLoaded) {
-                        patches.addView(Category("Save preferences was been enabled. Waiting for game lib to be loaded...\n\nForce load menu may not apply mods instantly. You would need to reactivate them again"));
-                        patches.addView(Button(-100, "Force load menu"));
-                        viewLoaded = true;
-                    }
-                    handler.postDelayed(this, 600);
-                } else {
-                    patches.removeAllViews();
-                    featureList(getFeatureList(), patches);
-                }
-            }
-        }, 500);
+        /*
+         * Arrastar o menu usando o header.
+         */
+
+        menuHeader.setOnTouchListener(
+                onTouchListener()
+        );
+
+
+        /*
+         * =====================================================
+         * EXIBIR OVERLAY
+         * =====================================================
+         */
+
+        mWindowManager =
+                (WindowManager)
+                        getSystemService(
+                                WINDOW_SERVICE
+                        );
+
+        mWindowManager.addView(
+                rootFrame,
+                params
+        );
     }
 
 

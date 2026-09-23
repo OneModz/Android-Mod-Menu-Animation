@@ -4,6 +4,7 @@
 
 #include <exception>
 #include <memory>
+#include <string>
 
 #include "Includes/Logger.h"
 #include "Includes/obfuscate.h"
@@ -154,6 +155,27 @@ Java_uk_lgl_modmenu_FloatingModMenuService_getFeatureList(
 
     ensureEngineStarted();
 
+    const GameState playerState =
+        gEngine.getGameState();
+
+    const std::string playerLevelText =
+        "RichTextView_Player Level: "
+        "<font color='#4C8DFF'>"
+        + std::to_string(playerState.playerLevel)
+        + "</font>";
+
+    const std::string playerCashText =
+        "RichTextView_Player Cash: "
+        "<font color='#41C300'>"
+        + std::to_string(playerState.playerCash)
+        + "</font>";
+
+    const std::string playerCoinsText =
+        "RichTextView_Player Coins: "
+        "<font color='#FFD54F'>"
+        + std::to_string(playerState.playerCoins)
+        + "</font>";
+
     const char* features[] = {
 
         OBFUSCATE("Category_Auto Play"),
@@ -222,17 +244,11 @@ Java_uk_lgl_modmenu_FloatingModMenuService_getFeatureList(
 
         OBFUSCATE("Category_Player Information"),
 
-        OBFUSCATE(
-            "RichTextView_Player Level: <font color='#4C8DFF'>30</font>"
-        ),
+        playerLevelText.c_str(),
 
-        OBFUSCATE(
-            "RichTextView_Player Cash: <font color='#41C300'>320</font>"
-        ),
+        playerCashText.c_str(),
 
-        OBFUSCATE(
-            "RichTextView_Player Coins: <font color='#FFD54F'>9151275</font>"
-        ),
+        playerCoinsText.c_str(),
 
         OBFUSCATE("Category_Appearance / Overlay"),
 
@@ -250,6 +266,12 @@ Java_uk_lgl_modmenu_FloatingModMenuService_getFeatureList(
 
         OBFUSCATE(
             "27_SeekBar_Overlay Scale_50_200"
+        ),
+
+        OBFUSCATE("Category_Settings"),
+
+        OBFUSCATE(
+            "28_Spinner_Language_English,Português,Español"
         ),
 
         OBFUSCATE("Category_Engine"),
@@ -636,6 +658,35 @@ Java_uk_lgl_modmenu_Preferences_Changes(
                 "Overlay Scale: %d%%",
                 value
             );
+            break;
+
+        case 28:
+            if (value >= 0 && value <= 2)
+            {
+                auto& config =
+                    ConfigManager::getInstance();
+
+                UserPreferences preferences =
+                    config.getPreferences();
+
+                preferences.language =
+                    static_cast<AppLanguage>(
+                        value
+                    );
+
+                config.setPreferences(
+                    preferences
+                );
+
+                config.saveActiveProfile(
+                    preferences
+                );
+
+                LOGI(
+                    "Language changed: %d",
+                    value
+                );
+            }
             break;
 
         case 5:

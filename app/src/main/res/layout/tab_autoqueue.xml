@@ -1,0 +1,495 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollAutoQueue"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:scrollbars="vertical"
+    android:fadeScrollbars="true"
+    android:nestedScrollingEnabled="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="4dp">
+
+        <!-- HEADER -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="38dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:background="@drawable/bg_section">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Auto queue settings"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Queue"
+                android:textColor="#7F878D"
+                android:textSize="9sp"/>
+
+        </LinearLayout>
+
+        <!-- ENABLE -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="6dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:background="@drawable/bg_section">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Enable auto queue"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Enable queue simulation"
+                    android:textColor="#858C92"
+                    android:textSize="9sp"/>
+
+            </LinearLayout>
+
+            <Switch
+                android:id="@+id/swAutoQueue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:showText="false"
+                android:button="@null"
+                android:thumbTint="@color/switch_thumb"
+                android:trackTint="@color/switch_track"
+                android:switchMinWidth="42dp"/>
+
+        </LinearLayout>
+
+        <!-- QUEUE MODE -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_marginTop="6dp"
+            android:orientation="vertical"
+            android:paddingStart="10dp"
+            android:paddingTop="7dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="7dp"
+            android:background="@drawable/bg_section">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Queue mode"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold"/>
+
+            <Spinner
+                android:id="@+id/spinnerQueueMode"
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:layout_marginTop="4dp"
+                android:spinnerMode="dropdown"/>
+
+        </LinearLayout>
+
+        <!-- COINS -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="72dp"
+            android:layout_marginTop="6dp"
+            android:orientation="vertical"
+            android:paddingStart="10dp"
+            android:paddingTop="7dp"
+            android:paddingEnd="10dp"
+            android:background="@drawable/bg_section">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Coins to use"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/txtCoinsValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="100"
+                    android:textColor="#DFFF32"
+                    android:textSize="11sp"
+                    android:textStyle="bold"/>
+
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/seekCoinsToUse"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:max="100000"
+                android:progress="100"
+                android:progressTint="#FFE632"
+                android:progressBackgroundTint="#44484C"
+                android:thumbTint="#FFFFFF"/>
+
+        </LinearLayout>
+
+        <!-- FILTERS -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="vertical"
+            android:padding="8dp"
+            android:background="@drawable/bg_section">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Filtering"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:layout_marginTop="5dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="100k tables or higher only"
+                    android:textColor="#DADDE0"
+                    android:textSize="10sp"/>
+
+                <Switch
+                    android:id="@+id/swHighTablesOnly"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:showText="false"
+                    android:button="@null"
+                    android:thumbTint="@color/switch_thumb"
+                    android:trackTint="@color/switch_track"
+                    android:switchMinWidth="42dp"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Mixed join"
+                    android:textColor="#DADDE0"
+                    android:textSize="10sp"/>
+
+                <Switch
+                    android:id="@+id/swMixedJoin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:showText="false"
+                    android:button="@null"
+                    android:thumbTint="@color/switch_thumb"
+                    android:trackTint="@color/switch_track"
+                    android:switchMinWidth="42dp"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Fix on single table"
+                    android:textColor="#DADDE0"
+                    android:textSize="10sp"/>
+
+                <Switch
+                    android:id="@+id/swFixSingleTable"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:showText="false"
+                    android:button="@null"
+                    android:thumbTint="@color/switch_thumb"
+                    android:trackTint="@color/switch_track"
+                    android:switchMinWidth="42dp"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- TABLE GRID -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="vertical"
+            android:padding="8dp"
+            android:background="@drawable/bg_section">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Table selection"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold"/>
+
+            <!-- ROW 1 -->
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
+                android:layout_marginTop="6dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnTable25"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:padding="0dp"
+                    android:text="25"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="9sp"
+                    android:background="@drawable/bg_pill_button"/>
+
+                <Button
+                    android:id="@+id/btnTable100"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:padding="0dp"
+                    android:text="100"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="9sp"
+                    android:background="@drawable/bg_pill_button"/>
+
+                <Button
+                    android:id="@+id/btnTable500"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:padding="0dp"
+                    android:text="500"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="9sp"
+                    android:background="@drawable/bg_pill_button"/>
+
+                <Button
+                    android:id="@+id/btnTable1200"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:padding="0dp"
+                    android:text="1.2k"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="9sp"
+                    android:background="@drawable/bg_pill_button"/>
+
+            </LinearLayout>
+
+            <!-- ROW 2 -->
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
+                android:layout_marginTop="4dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnTable2500"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:padding="0dp"
+                    android:text="2.5k"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="9sp"
+                    android:background="@drawable/bg_pill_button"/>
+
+                <Button
+                    android:id="@+id/btnTable3000"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:padding="0dp"
+                    android:text="3k"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="9sp"
+                    android:background="@drawable/bg_pill_button"/>
+
+                <Button
+                    android:id="@+id/btnTable5000"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:padding="0dp"
+                    android:text="5k"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="9sp"
+                    android:background="@drawable/bg_pill_button"/>
+
+                <Button
+                    android:id="@+id/btnTable10000"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:padding="0dp"
+                    android:text="10k"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="9sp"
+                    android:background="@drawable/bg_pill_button"/>
+
+            </LinearLayout>
+
+            <!-- ROW 3 -->
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
+                android:layout_marginTop="4dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnTable50500"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:padding="0dp"
+                    android:text="50.5k"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="9sp"
+                    android:background="@drawable/bg_pill_button"/>
+
+                <Button
+                    android:id="@+id/btnTable101000"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:padding="0dp"
+                    android:text="101k"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="9sp"
+                    android:background="@drawable/bg_pill_button"/>
+
+                <Button
+                    android:id="@+id/btnTable510000"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:padding="0dp"
+                    android:text="510k"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="9sp"
+                    android:background="@drawable/bg_pill_button"/>
+
+                <Button
+                    android:id="@+id/btnTable2550000"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:padding="0dp"
+                    android:text="2.55M"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="9sp"
+                    android:background="@drawable/bg_pill_button"/>
+
+            </LinearLayout>
+
+            <!-- ROW 4 -->
+
+            <Button
+                android:id="@+id/btnTable4150000"
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
+                android:layout_marginTop="4dp"
+                android:padding="0dp"
+                android:text="4.15M"
+                android:textAllCaps="false"
+                android:textColor="#9CFF2E"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_pill_button"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>

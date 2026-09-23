@@ -131,6 +131,13 @@ json serializePreferences(
             }
         },
         {
+            "language",
+            static_cast<int>(
+                prefs.language
+            )
+        },
+
+        {
             "paused",
             prefs.paused
         }
@@ -300,6 +307,16 @@ UserPreferences deserializePreferences(
                 )
             );
     }
+
+    prefs.language =
+        static_cast<AppLanguage>(
+            data.value(
+                "language",
+                static_cast<int>(
+                    AppLanguage::Portuguese
+                )
+            )
+        );
 
     prefs.paused =
         data.value(
